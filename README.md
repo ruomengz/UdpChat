@@ -59,7 +59,7 @@ Both client and server implement multi-thread to listen to their port all the ti
 
 To save the table, I create a User class, which can add new user, save offline messages, update state, update address and port ect.
 
-The program uses UDP to send messages, and I decorate the messages with different header to imply different usage of the command.
+The program uses UDP to send messages, and I decorate the messages with different headers to imply different usages of the command.
 
 E.g:
 
