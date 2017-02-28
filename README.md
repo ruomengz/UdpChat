@@ -40,7 +40,13 @@ If the user has logged in to the system, the old logged in client will be forced
 Server is holding an table of all registered users, including their listening port, address, and state.
 
 ### Chatting
-User can chat with other users by their user's name. Using the format `send <user-name> <message>` to send a message to that user. User cannot send a message to itself. User will get a acknowledge ACK from the receiver.
+User can chat with other users by their user's name. Using the format `send <user-name> <message>` to send a message to that user. 
+
+User cannot send a message to itself.
+
+User will get a acknowledge ACK from the receiver. 
+
+User cannot send a message to a unknown user.
 
 If the receiver is offline, user won't recieve ACK message, thus, user will send the offline message to server.
 
