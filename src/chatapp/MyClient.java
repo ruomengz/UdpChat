@@ -156,6 +156,7 @@ public class MyClient {
 		public ReceiverThread(DatagramSocket receiveSocket) {
 			this.receiveSocket = receiveSocket;
 			System.out.println("new thread!");
+			System.out.println(receiveSocket.getLocalPort() + "port " + receiveSocket.getLocalPort());
 		}
 
 		@Override
