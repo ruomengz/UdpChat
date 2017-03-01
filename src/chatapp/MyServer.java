@@ -104,6 +104,7 @@ public class MyServer {
 																userMap.get(toUser).getPort());
 			sendSocket.send(requestPacket);
 			sendSocket.close();
+			System.out.println(userMap.get(toUser).getOfflineMessage() + " " + userMap.get(toUser).getAddr() + " " + userMap.get(toUser).getPort());
 		} catch (SocketException e) {
 			e.printStackTrace();
 		} catch (IOException e) {

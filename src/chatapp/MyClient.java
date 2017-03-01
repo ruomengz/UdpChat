@@ -81,6 +81,7 @@ public class MyClient {
 						receiveSocket = new DatagramSocket(localPort);
 						stopFlag = false;
 						new Thread((new MyClient()).new ReceiverThread(receiveSocket)).start();
+						Thread.sleep(500);
 						SendSocketServer( "reg#!" + userName + "&!" + serverName + "&!" + localPort);
 						
 					}
@@ -91,7 +92,7 @@ public class MyClient {
 				}
 	        }
 			
-		} catch (IOException e) {
+		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
 		}
 		
@@ -156,7 +157,7 @@ public class MyClient {
 		public ReceiverThread(DatagramSocket receiveSocket) {
 			this.receiveSocket = receiveSocket;
 			System.out.println("new thread!");
-			System.out.println(receiveSocket.getLocalPort() + "port " + receiveSocket.getLocalPort());
+			System.out.println(receiveSocket.getLocalAddress() + " port " + receiveSocket.getLocalPort());
 		}
 
 		@Override
@@ -165,6 +166,7 @@ public class MyClient {
 			while (!stopFlag) {
 				DatagramPacket ServerMessagePacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
 				try {
+					System.out.println("!!!" + receiveSocket.getLocalAddress() + " port " + receiveSocket.getLocalPort());
 					receiveSocket.receive(ServerMessagePacket);
 					String rcv = new String(receiveBuffer, 0, ServerMessagePacket.getLength());
 					System.out.println(rcv);
