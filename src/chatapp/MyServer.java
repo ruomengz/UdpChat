@@ -156,6 +156,7 @@ class Broadcast implements Runnable {
         		}
         	}
 			sendSocket.close();
+			System.out.println("update users table");
         } catch (Exception e) {  
             e.printStackTrace();  
         }  
