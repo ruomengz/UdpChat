@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.HashMap;
 
@@ -39,8 +40,7 @@ public class MyClient {
 		try {
 			// Create DatagramSocket
 			
-			DatagramSocket receiveSocket = new DatagramSocket(localPort);
-			Thread threadReceive = new Thread((new MyClient()).new ReceiverThread(receiveSocket));
+			Thread threadReceive = new Thread((new MyClient()).new ReceiverThread(localPort));
 			threadReceive.start();
 			// register to server 
 			System.out.println("Connecting to " + serverName + " on port " + serverPort);
@@ -79,10 +79,11 @@ public class MyClient {
 						
 					}
 					else if(command[0].equals("reg")) {
-						SendSocketServer( "reg#!" + userName + "&!" + serverName + "&!" + localPort);
 						stopFlag = false;
-						threadReceive = new Thread((new MyClient()).new ReceiverThread(receiveSocket));
+						threadReceive = new Thread((new MyClient()).new ReceiverThread(localPort));
 						threadReceive.start();
+						SendSocketServer( "reg#!" + userName + "&!" + serverName + "&!" + localPort);
+						
 					}
 				}
 				else { 
@@ -153,8 +154,8 @@ public class MyClient {
 	
 	public class ReceiverThread implements Runnable {
 		DatagramSocket receiveSocket;
-		public ReceiverThread(DatagramSocket receiveSocket) {
-			this.receiveSocket = receiveSocket;
+		public ReceiverThread(int localPort) throws SocketException {
+			this.receiveSocket = new DatagramSocket(localPort);
 		}
 
 		@Override
@@ -202,6 +203,7 @@ public class MyClient {
 					e.printStackTrace();
 				}
 			}
+			receiveSocket.close();
 			System.out.println("[You are Offline. Bye.]");
 			System.out.print(">>> ");
 		}
