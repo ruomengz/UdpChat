@@ -44,7 +44,7 @@ public class MyClient {
 			threadReceive.start();
 			// register to server 
 			System.out.println("Connecting to " + serverName + " on port " + serverPort);
-			SendSocketServer( "new#!" + userName + "&!" + serverName + "&!" + localPort);
+			SendSocketServer( "new#!" + userName + "&!" + InetAddress.getLocalHost().getHostAddress() + "&!" + localPort);
 			System.out.println(">>> [Welcome, You are registered.]");
 			// Begin to send
 			BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
