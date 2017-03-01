@@ -9,6 +9,10 @@ import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.util.HashMap;
 
+/** 
+ * @author rz2357
+ * @version 1.0 
+ */  
 
 public class MyClient {
 	
@@ -16,6 +20,8 @@ public class MyClient {
 	public static String userName;
 	public static String serverName;
 	public static int serverPort;
+	public static volatile boolean stopFlag = false;
+
 	
 	public static void main(String[] args) {
 		userName = args[0];
@@ -44,26 +50,19 @@ public class MyClient {
 			BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
 			
 	        while (true) {
-				/*
-				 * client request
-				 */
+	        	//user requests
 	        	System.out.print(">>> ");
 				String inputString = input.readLine();
 				String[] command = inputString.split(" ");
 				String message = "";
+				//send message requests
 				if (command[0].equals("send")){
 					if(command.length > 2 && userMap.containsKey(command[1])){
-						if(userMap.get(command[1]).getState()) {
-							message = "msg#!" + userName + ": "+ inputString.split(" ",3)[2];
-							SendSocketClient(message, command[1]);
+						if(command[1].equals(userName)) {
+							System.out.println(">>> [You cannot send to yourself.]");
 						}
-						else {
-//							message = "msg#!" + userName + ": "+ inputString.split(" ",3)[2];
-//							SendSocketClient(message, command[1]);
-							System.out.println(">>> [No ACK from " + command[1] + ", message sent to server.]");
-							message = userName + "&!" + command[1] + "&!: "+ inputString.split(" ",3)[2];
-							SendSocketServer("save#!" + message);
-						}
+						message = "msg#!" + userName + ": " + inputString.split(" ", 3)[2];
+						SendSocketClient(message, command[1]);
 					}
 					else {
 						System.out.println("No user founded");
@@ -72,11 +71,14 @@ public class MyClient {
 				else if (command.length > 1 && command[1].equals(userName)) {
 					if (command[0].equals("dereg")) {
 						SendSocketServer(command[0] + "#!" + command[1]);
-						threadReceive.interrupt();
-						System.out.println("[You are Offline. Bye.]");
+						Thread.currentThread().interrupt();
+						stopFlag = true;
+						//threadReceive.join();
+						
 					}
 					else if(command[0].equals("reg")) {
 						SendSocketServer( "reg#!" + userName + "&!" + serverName + "&!" + localPort);
+						stopFlag = false;
 						threadReceive = new Thread((new MyClient()).new ReceiverThread(receiveSocket));
 						threadReceive.start();
 					}
@@ -118,6 +120,7 @@ public class MyClient {
 		sendSocket.close();
 	}
 	
+	// A thread of listening port
 	private static void SendSocketServer(String message) throws IOException {
 		byte[] sendBuffer = new byte[1024];
 		byte[] receiveBuffer = new byte[1024];
@@ -155,17 +158,19 @@ public class MyClient {
 		@Override
 		public void run() {
 			byte[] receiveBuffer = new byte[1024];
-			while (!Thread.currentThread().isInterrupted()) {
+			while (!stopFlag) {
 				DatagramPacket ServerMessagePacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
 				try {
 					receiveSocket.receive(ServerMessagePacket);
 					String rcv = new String(receiveBuffer, 0, ServerMessagePacket.getLength());
+					// received a message
 					if(rcv.split("#!")[0].equals("msg")){
 						System.out.println(rcv.split("#!")[1]);
 						System.out.print(">>> ");
 						ServerMessagePacket.setData("ack".getBytes());
 						receiveSocket.send(ServerMessagePacket);
 					}
+					// received offline messages and process
 					else if(rcv.split("#!")[0].equals("off")){
 						String[] offMessage = rcv.split("#!")[1].split("&!");
 						System.out.println("[You have messages]");
@@ -174,6 +179,7 @@ public class MyClient {
 						}
 						System.out.print(">>> ");
 					}
+					// received update command of users table
 					else if(rcv.split("#!")[0].equals("update")){
 						String[] users = rcv.split("#!")[1].split("&!");
 						for(int i = 0; i < users.length; i++) {
@@ -183,6 +189,7 @@ public class MyClient {
 						System.out.println("[Client table updated.]");
 						System.out.print(">>> ");
 					}
+					// received a confliction, need to quit
 					else if(rcv.split("#!")[0].equals("conf")){
 						System.out.println("[Same user logged in, you are going to exit.]");
 						System.out.print(">>> ");
@@ -192,6 +199,8 @@ public class MyClient {
 					e.printStackTrace();
 				}
 			}
+			System.out.println("[You are Offline. Bye.]");
+			System.out.print(">>> ");
 		}
 	}
 	

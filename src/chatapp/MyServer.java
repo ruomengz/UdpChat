@@ -8,6 +8,10 @@ import java.net.SocketException;
 import java.util.Date;
 import java.util.HashMap;
 
+/** 
+ * @author rz2357
+ * @version 1.0 
+ */  
 
 public class MyServer {
 	
@@ -37,18 +41,35 @@ public class MyServer {
 						String[] query = rcv.split("#!");
 						if (query[0].equals("save")) {
 							String[] reqUser = query[1].split("&!");
-							//"save#!fromUser&!toUser&!message content"
+							//"save#!fromUser&:!toUser&!message content"
+							// save#!y:&!x&!hhhhhahaha
+
 							System.out.println(rcv);
-							String message = reqUser[0] + ": " + new Date().toString() + reqUser[2];
+							String message = reqUser[0] + new Date().toString()+ " "+ reqUser[2];
 							userMap.get(reqUser[1]).AddOfflineMessage(message);
 						}
 						else if(query[0].equals("new")){
 							String[] regUser = query[1].split("&!");
 							System.out.println("new user in " + regUser[0] + " " + regUser[1] + " " + regUser[2]);
-							if(userMap.containsKey(regUser[0]) && userMap.get(regUser[0]).getState()) {
-								SendConflict(regUser[0]);
+							if(userMap.containsKey(regUser[0]) &&
+									(!userMap.get(regUser[0]).getAddr().equals(regUser[1]) || 
+									userMap.get(regUser[0]).getPort() != Integer.parseInt(regUser[2]))) {
+								if(userMap.get(regUser[0]).getState()) {
+									SendConflict(regUser[0]);
+									userMap.put(regUser[0], new MyUser(regUser[0], regUser[1], Integer.parseInt(regUser[2]), true));
+								}
+								else if(!userMap.get(regUser[0]).IsEmptyOfflineMessage()){
+									String tmpMessage = userMap.get(regUser[0]).getOfflineMessage();
+									userMap.put(regUser[0], new MyUser(regUser[0], regUser[1], Integer.parseInt(regUser[2]), true));
+									userMap.get(regUser[0]).AddOfflineMessage(tmpMessage);
+									SendOffline(regUser[0]);
+									userMap.get(regUser[0]).ClearOfflineMessage();
+								}
 							}
-							userMap.put(regUser[0], new MyUser(regUser[0], regUser[1], Integer.parseInt(regUser[2]), true));
+							else {
+								userMap.put(regUser[0], new MyUser(regUser[0], regUser[1], Integer.parseInt(regUser[2]), true));
+
+							}
 						}
 						else if(query[0].equals("reg")){
 							String[] regUser = query[1].split("&!");
@@ -108,13 +129,6 @@ public class MyServer {
 	}
 }
 
-/** 
- * @ broadcast new table
- * @author rz2357
- * @version 1.0 
- * @since 
- */  
-
 class Broadcast implements Runnable {  
     private HashMap<String, MyUser> userMap;  
     public Broadcast(HashMap<String, MyUser> userMap){  
@@ -134,7 +148,7 @@ class Broadcast implements Runnable {
         	sendBuffer = message.getBytes();
 			DatagramSocket sendSocket = new DatagramSocket();
 			for (MyUser user: userMap.values()) {
-        		if(user.getState()) {
+        		if(true) {
         			DatagramPacket requestPacket = new DatagramPacket(sendBuffer, sendBuffer.length, 
         															InetAddress.getByName(user.getAddr()), 
         															user.getPort());

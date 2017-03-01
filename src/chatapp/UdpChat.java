@@ -1,13 +1,17 @@
 package chatapp;
 
+/** 
+ * @author rz2357
+ * @version 1.0 
+ */  
 public class UdpChat {
 
-	public static void main(String[] args) {
-		if(args[0].equals("-c") && args.length == 5) {
+	public static void main(String[] args) throws InterruptedException {
+		if(args.length == 5 && args[0].equals("-c")) {
 			MyClient.main(new String[]{args[1], args[2], args[3], args[4]});
 			
 		}
-		else if(args[0].equals("-s") && args.length == 2) {
+		else if(args.length == 2 && args[0].equals("-s")) {
 			MyServer.main(new String[]{args[1]});
 		}
 		else {

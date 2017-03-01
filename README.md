@@ -69,13 +69,13 @@ The program uses UDP to send messages, and I decorate the messages with differen
 
 E.g:
 
-For server:
+For server:<br>
 `reg#!<user>` means a user registered.<br>
 `dereg#!<user>` means a user de-registered.<br>
 `save#!<fromUser>&!<toUser>&!<message content>` means get a offline message need to be saved.<br>
 `new#!<user>&!<IPaddress>&!<port>` means a new user registered.
 
-For client:
+For client:<br>
 `msg#!<message>` means a message come.<br>
 `off#!<offline>` means offline messages.<br>
 `update#!<table>` means server updates the user table.<br>
