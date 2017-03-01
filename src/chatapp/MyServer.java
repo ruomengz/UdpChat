@@ -76,6 +76,12 @@ public class MyServer {
 									userMap.get(regUser[0]).ClearOfflineMessage();
 								}
 							}
+							else if(userMap.containsKey(regUser[0])) {
+								userMap.get(regUser[0]).setState(true);
+								userMap.get(regUser[0]).AddOfflineMessage(userMap.get(regUser[0]).getOfflineMessage());
+								SendOffline(regUser[0]);
+								userMap.get(regUser[0]).ClearOfflineMessage();
+							}
 							else {
 								userMap.put(regUser[0], new MyUser(regUser[0], regUser[1], Integer.parseInt(regUser[2]), true));
 
