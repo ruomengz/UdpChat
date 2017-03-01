@@ -61,8 +61,10 @@ public class MyClient {
 						if(command[1].equals(userName)) {
 							System.out.println(">>> [You cannot send to yourself.]");
 						}
-						message = "msg#!" + userName + ": " + inputString.split(" ", 3)[2];
-						SendSocketClient(message, command[1]);
+						else {
+							message = "msg#!" + userName + ": " + inputString.split(" ", 3)[2];
+							SendSocketClient(message, command[1]);
+						}
 					}
 					else {
 						System.out.println("No user founded");
@@ -172,6 +174,7 @@ public class MyClient {
 					}
 					// received offline messages and process
 					else if(rcv.split("#!")[0].equals("off")){
+						System.out.println(rcv);
 						String[] offMessage = rcv.split("#!")[1].split("&!");
 						System.out.println("[You have messages]");
 						for(int i = 0; i < offMessage.length; i++) {

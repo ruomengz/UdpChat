@@ -43,9 +43,8 @@ public class MyServer {
 							String[] reqUser = query[1].split("&!");
 							//"save#!fromUser&:!toUser&!message content"
 							// save#!y:&!x&!hhhhhahaha
-
-							System.out.println(rcv);
 							String message = reqUser[0] + new Date().toString()+ " "+ reqUser[2];
+							System.out.println(message);
 							userMap.get(reqUser[1]).AddOfflineMessage(message);
 						}
 						else if(query[0].equals("new")){
@@ -98,6 +97,7 @@ public class MyServer {
 		byte[] sendBuffer = new byte[1024];
 		try {
 			DatagramSocket sendSocket = new DatagramSocket();
+			System.out.println(userMap.get(toUser).getOfflineMessage());
 			sendBuffer = ("off#!" + userMap.get(toUser).getOfflineMessage()).getBytes();
 			DatagramPacket requestPacket = new DatagramPacket(sendBuffer, sendBuffer.length, 
 																InetAddress.getByName(userMap.get(toUser).getAddr()), 
