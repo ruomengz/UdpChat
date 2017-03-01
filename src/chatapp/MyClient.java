@@ -82,7 +82,7 @@ public class MyClient {
 						stopFlag = false;
 						new Thread((new MyClient()).new ReceiverThread(receiveSocket)).start();
 						Thread.sleep(500);
-						SendSocketServer( "reg#!" + userName + "&!" + serverName + "&!" + localPort);
+						SendSocketServer( "reg#!" + userName + "&!" + InetAddress.getLocalHost().getHostAddress() + "&!" + localPort);
 						
 					}
 				}
