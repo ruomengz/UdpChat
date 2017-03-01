@@ -32,6 +32,7 @@ public class MyClient {
 		Runtime.getRuntime().addShutdownHook(new Thread(){
             @Override
             public void run() {
+ 
                 System.out.println("See u!");
             }
         });
@@ -67,21 +68,23 @@ public class MyClient {
 						}
 					}
 					else {
-						System.out.println("No user founded");
+						System.out.println("No user or invalid input");
 					}
 				}
+				// reg and dereg only one user
 				else if (command.length > 1 && command[1].equals(userName)) {
+					// for dereg, shut down user listening port
 					if (command[0].equals("dereg")) {
 						SendSocketServer(command[0] + "#!" + command[1]);
 						stopFlag = true;
-						//receiveSocket.close();
 					}
+					// reg user reopen listening socket
 					else if(command[0].equals("reg")) {
 						receiveSocket.close();
 						receiveSocket = new DatagramSocket(localPort);
 						stopFlag = false;
 						new Thread((new MyClient()).new ReceiverThread(receiveSocket)).start();
-						Thread.sleep(500);
+						Thread.sleep(50);
 						SendSocketServer( "reg#!" + userName + "&!" + InetAddress.getLocalHost().getHostAddress() + "&!" + localPort);
 						
 					}
@@ -156,8 +159,6 @@ public class MyClient {
 		DatagramSocket receiveSocket;
 		public ReceiverThread(DatagramSocket receiveSocket) {
 			this.receiveSocket = receiveSocket;
-			System.out.println("new thread!");
-			System.out.println(receiveSocket.getLocalAddress() + " port " + receiveSocket.getLocalPort());
 		}
 
 		@Override
@@ -166,10 +167,8 @@ public class MyClient {
 			while (!stopFlag) {
 				DatagramPacket ServerMessagePacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
 				try {
-					System.out.println("!!!" + receiveSocket.getLocalAddress() + " port " + receiveSocket.getLocalPort());
 					receiveSocket.receive(ServerMessagePacket);
 					String rcv = new String(receiveBuffer, 0, ServerMessagePacket.getLength());
-					System.out.println(rcv);
 					// received a message
 					if(rcv.split("#!")[0].equals("msg")){
 						System.out.println(rcv.split("#!")[1]);
@@ -179,7 +178,6 @@ public class MyClient {
 					}
 					// received offline messages and process
 					else if(rcv.split("#!")[0].equals("off")){
-						System.out.println(rcv);
 						String[] offMessage = rcv.split("#!")[1].split("&!");
 						System.out.println("[You have messages]");
 						for(int i = 0; i < offMessage.length; i++) {
@@ -202,6 +200,11 @@ public class MyClient {
 						System.out.println("[Same user logged in, you are going to exit.]");
 						System.out.print(">>> ");
 						System.exit(0);
+					}
+					// received a active, need to display
+					else if(rcv.split("#!")[0].equals("active")){
+						System.out.println("[Client " + rcv.split("#!")[1] + " exists!!]");
+						System.out.print(">>> ");
 					}
 				} catch (IOException e) {
 					e.printStackTrace();

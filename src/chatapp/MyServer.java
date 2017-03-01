@@ -19,7 +19,7 @@ public class MyServer {
 	
 	public static void main(String[] args) {
 		int localPort = Integer.parseInt(args[0]);
-		
+		// before shut down
 		Runtime.getRuntime().addShutdownHook(new Thread(){
             @Override
             public void run() {
@@ -36,17 +36,26 @@ public class MyServer {
 					receiveSocket.receive(ServerMessagePacket);
 					String rcv = new String(receiveBuffer, 0, ServerMessagePacket.getLength());
 					if(rcv != null){
+						// send ACK back to client
 						ServerMessagePacket.setData("ack".getBytes());
 						receiveSocket.send(ServerMessagePacket);
 						String[] query = rcv.split("#!");
+						// get a offline message
 						if (query[0].equals("save")) {
 							String[] reqUser = query[1].split("&!");
+							// if user is active
+							if(userMap.get(reqUser[1]).getState()) {
+								SendClient("active#!" + reqUser[1], reqUser[0]);
+							}
 							//"save#!fromUser&:!toUser&!message content"
 							// save#!y:&!x&!hhhhhahaha
-							String message = reqUser[0] + new Date().toString()+ " "+ reqUser[2];
-							System.out.println(message);
-							userMap.get(reqUser[1]).AddOfflineMessage(message);
+							// if not, save the offline message
+							else {
+								String message = reqUser[0] + new Date().toString()+ " "+ reqUser[2];
+								userMap.get(reqUser[1]).AddOfflineMessage(message);
+							}
 						}
+						// register a new user
 						else if(query[0].equals("new")){
 							String[] regUser = query[1].split("&!");
 							System.out.println("new user in " + regUser[0] + " " + regUser[1] + " " + regUser[2]);
@@ -54,9 +63,10 @@ public class MyServer {
 									(!userMap.get(regUser[0]).getAddr().equals(regUser[1]) || 
 									userMap.get(regUser[0]).getPort() != Integer.parseInt(regUser[2]))) {
 								if(userMap.get(regUser[0]).getState()) {
-									SendConflict(regUser[0]);
+									SendClient("conf#!",regUser[0]);
 									userMap.put(regUser[0], new MyUser(regUser[0], regUser[1], Integer.parseInt(regUser[2]), true));
 								}
+								// check new user's offline message
 								else if(!userMap.get(regUser[0]).IsEmptyOfflineMessage()){
 									String tmpMessage = userMap.get(regUser[0]).getOfflineMessage();
 									userMap.put(regUser[0], new MyUser(regUser[0], regUser[1], Integer.parseInt(regUser[2]), true));
@@ -70,6 +80,7 @@ public class MyServer {
 
 							}
 						}
+						// register a user
 						else if(query[0].equals("reg")){
 							String[] regUser = query[1].split("&!");
 							userMap.get(regUser[0]).regNew(regUser[1], Integer.parseInt(regUser[2]), true);
@@ -78,9 +89,11 @@ public class MyServer {
 								userMap.get(regUser[0]).ClearOfflineMessage();
 							}
 						}
+						// deregister a user
 						else if(query[0].equals("dereg")){
 							userMap.get(query[1]).setState(false);
 						}
+						// update users table
 						new Thread(new Broadcast(userMap)).start(); 
 					}
 				} catch (IOException e) {
@@ -93,11 +106,11 @@ public class MyServer {
 		}
 	}
 	
+	// send offline message to a client
 	private static void SendOffline(String toUser) {
 		byte[] sendBuffer = new byte[1024];
 		try {
 			DatagramSocket sendSocket = new DatagramSocket();
-			System.out.println(userMap.get(toUser).getOfflineMessage());
 			sendBuffer = ("off#!" + userMap.get(toUser).getOfflineMessage()).getBytes();
 			DatagramPacket requestPacket = new DatagramPacket(sendBuffer, sendBuffer.length, 
 																InetAddress.getByName(userMap.get(toUser).getAddr()), 
@@ -112,11 +125,12 @@ public class MyServer {
 		}		
 	}
 	
-	private static void SendConflict(String toUser) {
+	// send message to client
+	private static void SendClient(String message, String toUser) {
 		byte[] sendBuffer = new byte[1024];
 		try {
 			DatagramSocket sendSocket = new DatagramSocket();
-			sendBuffer = ("conf#!").getBytes();
+			sendBuffer = message.getBytes();
 			DatagramPacket requestPacket = new DatagramPacket(sendBuffer, sendBuffer.length, 
 																InetAddress.getByName(userMap.get(toUser).getAddr()), 
 																userMap.get(toUser).getPort());
@@ -130,6 +144,7 @@ public class MyServer {
 	}
 }
 
+// nroadcast thread to update userMap
 class Broadcast implements Runnable {  
     private HashMap<String, MyUser> userMap;  
     public Broadcast(HashMap<String, MyUser> userMap){  
@@ -148,6 +163,7 @@ class Broadcast implements Runnable {
         	}
         	sendBuffer = message.getBytes();
 			DatagramSocket sendSocket = new DatagramSocket();
+			// send to all users
 			for (MyUser user: userMap.values()) {
         		if(true) {
         			DatagramPacket requestPacket = new DatagramPacket(sendBuffer, sendBuffer.length, 
