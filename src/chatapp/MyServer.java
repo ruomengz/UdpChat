@@ -43,6 +43,7 @@ public class MyServer {
 						// get a offline message
 						if (query[0].equals("save")) {
 							String[] reqUser = query[1].split("&!");
+							userMap.get(reqUser[1]).setState(false);
 							// if user is active
 							if(userMap.get(reqUser[1]).getState()) {
 								SendClient("active#!" + reqUser[1], reqUser[0]);
