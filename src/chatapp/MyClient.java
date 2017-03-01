@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.HashMap;
 
@@ -40,8 +39,9 @@ public class MyClient {
 		try {
 			// Create DatagramSocket
 			
-			Thread threadReceive = new Thread((new MyClient()).new ReceiverThread(localPort));
-			threadReceive.start();
+			DatagramSocket receiveSocket = new DatagramSocket(localPort);
+			stopFlag = false;
+			new Thread((new MyClient()).new ReceiverThread(receiveSocket)).start();
 			// register to server 
 			System.out.println("Connecting to " + serverName + " on port " + serverPort);
 			SendSocketServer( "new#!" + userName + "&!" + InetAddress.getLocalHost().getHostAddress() + "&!" + localPort);
@@ -73,15 +73,12 @@ public class MyClient {
 				else if (command.length > 1 && command[1].equals(userName)) {
 					if (command[0].equals("dereg")) {
 						SendSocketServer(command[0] + "#!" + command[1]);
-						Thread.currentThread().interrupt();
 						stopFlag = true;
-						//threadReceive.join();
 						
 					}
 					else if(command[0].equals("reg")) {
 						stopFlag = false;
-						threadReceive = new Thread((new MyClient()).new ReceiverThread(localPort));
-						threadReceive.start();
+						new Thread((new MyClient()).new ReceiverThread(receiveSocket)).start();
 						SendSocketServer( "reg#!" + userName + "&!" + serverName + "&!" + localPort);
 						
 					}
@@ -154,8 +151,8 @@ public class MyClient {
 	
 	public class ReceiverThread implements Runnable {
 		DatagramSocket receiveSocket;
-		public ReceiverThread(int localPort) throws SocketException {
-			this.receiveSocket = new DatagramSocket(localPort);
+		public ReceiverThread(DatagramSocket receiveSocket) {
+			this.receiveSocket = receiveSocket;
 		}
 
 		@Override
@@ -203,7 +200,6 @@ public class MyClient {
 					e.printStackTrace();
 				}
 			}
-			receiveSocket.close();
 			System.out.println("[You are Offline. Bye.]");
 			System.out.print(">>> ");
 		}
