@@ -74,9 +74,10 @@ public class MyClient {
 					if (command[0].equals("dereg")) {
 						SendSocketServer(command[0] + "#!" + command[1]);
 						stopFlag = true;
-						receiveSocket.close();
+						//receiveSocket.close();
 					}
 					else if(command[0].equals("reg")) {
+						receiveSocket.close();
 						receiveSocket = new DatagramSocket(localPort);
 						stopFlag = false;
 						new Thread((new MyClient()).new ReceiverThread(receiveSocket)).start();
