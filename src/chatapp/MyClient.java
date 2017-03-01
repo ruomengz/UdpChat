@@ -74,9 +74,10 @@ public class MyClient {
 					if (command[0].equals("dereg")) {
 						SendSocketServer(command[0] + "#!" + command[1]);
 						stopFlag = true;
-						
+						receiveSocket.close();
 					}
 					else if(command[0].equals("reg")) {
+						receiveSocket = new DatagramSocket(localPort);
 						stopFlag = false;
 						new Thread((new MyClient()).new ReceiverThread(receiveSocket)).start();
 						SendSocketServer( "reg#!" + userName + "&!" + serverName + "&!" + localPort);
@@ -153,6 +154,7 @@ public class MyClient {
 		DatagramSocket receiveSocket;
 		public ReceiverThread(DatagramSocket receiveSocket) {
 			this.receiveSocket = receiveSocket;
+			System.out.println("new thread!");
 		}
 
 		@Override
@@ -163,6 +165,7 @@ public class MyClient {
 				try {
 					receiveSocket.receive(ServerMessagePacket);
 					String rcv = new String(receiveBuffer, 0, ServerMessagePacket.getLength());
+					System.out.println(rcv);
 					// received a message
 					if(rcv.split("#!")[0].equals("msg")){
 						System.out.println(rcv.split("#!")[1]);
